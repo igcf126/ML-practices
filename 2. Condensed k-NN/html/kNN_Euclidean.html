@@ -1,0 +1,446 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>kNN_Euclidean</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-02-22"><meta name="DC.source" content="kNN_Euclidean.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Secci&oacute;n I: Desempe&ntilde;o de kNN para diferentes m&eacute;tricas de distancia.</a></li></ul></div><pre class="codeinput">clear, clc
+
+tic <span class="comment">% Inicia el conteo del tiempo</span>
+</pre><h2 id="2">Secci&oacute;n I: Desempe&ntilde;o de kNN para diferentes m&eacute;tricas de distancia.</h2><p>El presente laboratorio lo iniciaremos implementando el algoritmo de k-Nearest Neigbors (kNN) para varios valores de k y para varios tipos de distancias en el espacio, recordando que este algoritmo consiste en la clasificaci&oacute;n autom&aacute;tica de varios puestos de muestra respecto a los puntos conocidos m&aacute;s cercanos. Luego de observado el comportamiento del algoritmo ante diferentes tipos de distancias se estar&aacute; implementando una variaci&oacute;n a dicho proceso, llamado condensed k-NN, utilizado para reducir el set de datos para la clasificaci&oacute;n.</p><p>Se nos solicita adaptar el algoritmo desarrollado en el laboratorio 1 para que este calcule las distancias de varios m&eacute;todos diferentes, los utilizados en el presente ser&aacute;n la distancia euclideana, Manhattan y Mahalanobis.</p><p><img vspace="5" hspace="5" src="FormulasDistancias.png" alt=""> </p><p>Se puede observar una variaci&oacute;n que se le ha aplicado al algoritmo visto en el laboratorio 1, donde podemos observar que se le solicita al usuario el tipo de distancia con la que va a trabajar</p><p>A continuaci&oacute;n se presentan los tiempos de ejecuci&oacute;n de cada tipo de distancia para cada valor de k y sus respectivos valores de precisi&oacute;n.</p><pre class="codeinput"><span class="comment">% Importa los datos</span>
+train_set = readtable(<span class="string">"Train set.xlsx"</span>);
+test_set = readtable(<span class="string">"Test set.xlsx"</span>);
+
+g1 = train_set(train_set.gender==1, :);
+g2 = train_set(train_set.gender==2, :);
+
+<span class="comment">% Grafica los datos</span>
+plot3(g1.height, g1.weight, g1.alco, <span class="string">'.b'</span>)
+hold <span class="string">on</span>
+plot3(g2.height, g2.weight, g2.alco, <span class="string">'.y'</span>)
+
+<span class="comment">% Se solicita la cantidad de vecinos a considerar.</span>
+
+nTrainData = length(train_set.height); <span class="comment">%size(train_set);</span>
+ValReales = test_set.gender;
+
+[acc_K1_DistManhattan, tiempo_K1_DistManhattan] = KNN(1, 1, test_set, train_set, ValReales)
+[acc_K1_DistManhattan, tiempo_K3_DistManhattan] = KNN(3, 1, test_set, train_set, ValReales)
+[acc_K1_DistManhattan, tiempo_K5_DistManhattan] = KNN(5, 1, test_set, train_set, ValReales)
+[acc_K1_DistManhattan, tiempo_K9_DistManhattan] = KNN(9, 1, test_set, train_set, ValReales)
+[acc_K1_DistManhattan, tiempo_K15_DistManhattan] = KNN(15, 1, test_set, train_set, ValReales)
+
+[acc_K1_DistEuc, tiempo_K1_DistEuc] = KNN(1, 2, test_set, train_set, ValReales)
+[acc_K1_DistEuc, tiempo_K3_DistEuc] = KNN(3, 2, test_set, train_set, ValReales)
+[acc_K1_DistEuc, tiempo_K5_DistEuc] = KNN(5, 2, test_set, train_set, ValReales)
+[acc_K1_DistEuc, tiempo_K9_DistEuc] = KNN(9, 2, test_set, train_set, ValReales)
+[acc_K1_DistEuc, tiempo_K15_DistEuc] = KNN(15, 2, test_set, train_set, ValReales)
+
+[acc_K1_DistMahalanobis, tiempoK1DistMahalanobis] = KNN(1, 3, test_set, train_set, ValReales)
+[acc_K3_DistMahalanobis, tiempoK3DistMahalanobis] = KNN(3, 3, test_set, train_set, ValReales)
+[acc_K5_DistMahalanobis, tiempoK5DistMahalanobis] = KNN(5, 3, test_set, train_set, ValReales)
+[acc_K9_DistMahalanobis, tiempoK9DistMahalanobis] = KNN(9, 3, test_set, train_set, ValReales)
+[acc_K15_DistMahalanobis, tiempoK15DistMahalanobis] = KNN(15, 3, test_set, train_set, ValReales)
+</pre><pre class="codeoutput">
+acc_K1_DistManhattan =
+
+    0.7009
+
+
+tiempo_K1_DistManhattan =
+
+   24.0272
+
+
+acc_K1_DistManhattan =
+
+    0.7251
+
+
+tiempo_K3_DistManhattan =
+
+   28.3030
+
+
+acc_K1_DistManhattan =
+
+    0.7455
+
+
+tiempo_K5_DistManhattan =
+
+   25.4329
+
+
+acc_K1_DistManhattan =
+
+    0.7564
+
+
+tiempo_K9_DistManhattan =
+
+   25.9776
+
+
+acc_K1_DistManhattan =
+
+    0.7678
+
+
+tiempo_K15_DistManhattan =
+
+   25.2988
+
+
+acc_K1_DistEuc =
+
+    0.7008
+
+
+tiempo_K1_DistEuc =
+
+   26.5273
+
+
+acc_K1_DistEuc =
+
+    0.7254
+
+
+tiempo_K3_DistEuc =
+
+   27.5501
+
+
+acc_K1_DistEuc =
+
+    0.7456
+
+
+tiempo_K5_DistEuc =
+
+   27.4555
+
+
+acc_K1_DistEuc =
+
+    0.7566
+
+
+tiempo_K9_DistEuc =
+
+   28.6168
+
+
+acc_K1_DistEuc =
+
+    0.7681
+
+
+tiempo_K15_DistEuc =
+
+   27.9607
+
+
+acc_K1_DistMahalanobis =
+
+    0.7010
+
+
+tiempoK1DistMahalanobis =
+
+   30.5928
+
+
+acc_K3_DistMahalanobis =
+
+    0.7249
+
+
+tiempoK3DistMahalanobis =
+
+   31.1175
+
+
+acc_K5_DistMahalanobis =
+
+    0.7451
+
+
+tiempoK5DistMahalanobis =
+
+   29.7090
+
+
+acc_K9_DistMahalanobis =
+
+    0.7560
+
+
+tiempoK9DistMahalanobis =
+
+   31.6546
+
+
+acc_K15_DistMahalanobis =
+
+    0.7668
+
+
+tiempoK15DistMahalanobis =
+
+   29.8922
+
+</pre><img vspace="5" hspace="5" src="kNN_Euclidean_01.png" alt=""> <p>Se ha podido observar que los tipos de distancias no alteran tanto la precisi&oacute;n del m&eacute;todo de k vecinos m&aacute;s cercanos como lo hace el valor de k, por lo que podemos intuir que utilizar varias m&eacute;tricas de distancias no alteran del todo el proceso, adem&aacute;s de que no podemos garantizar buena eficiencia en cuanto al tiempo.</p><pre class="codeinput">toc <span class="comment">% Termina conteo de tiempo</span>
+
+<span class="keyword">function</span> [acc, tiempoKNN]=KNN(k, DistType, test_seta, train_seta, ValRealesa)
+    tic;
+
+    <span class="comment">% Se crea una matriz correspondiente a la inversa de los valores de</span>
+    <span class="comment">% varianza</span>
+    sig = var([train_seta.height(:) train_seta.weight(:) train_seta.alco(:)]);
+
+    Sig = [sig(1) 0 0; 0 sig(2) 0; 0 0 sig(3)];
+    Sig1 = inv(Sig);
+    Sig2 = [Sig1(1,1) Sig1(2,2) Sig1(3,3)];
+
+    <span class="comment">% k = input('Introduzca la cantidad de vecinos: ');</span>
+    <span class="comment">% DistType = input('Seleccione el tipo de distancia \n (1) Manhattan, (2) Euclindeana, (3) Mahalanobis: ');</span>
+
+    <span class="keyword">for</span> i = 1:length(test_seta.height)
+        i;
+        <span class="keyword">switch</span> DistType <span class="comment">% Calcula la distancia a cada punto dado</span>
+            <span class="keyword">case</span> 1 <span class="comment">% Distancia Manhattan</span>
+                d = abs([test_seta.height(i), test_seta.weight(i), test_seta.alco(i)] - [train_seta.height(:) train_seta.weight(:) train_seta.alco(:)]);
+                d = d(:,1)+d(:,2)+d(:,3);
+            <span class="keyword">case</span> 2 <span class="comment">% Distancia Euclideana</span>
+                <span class="comment">%Rep = repmat([test_set.height(i), test_set.weight(i), test_set.alco(i)], nTrainData, 1);</span>
+                d = (([test_seta.height(i), test_seta.weight(i), test_seta.alco(i)] - [train_seta.height(:) train_seta.weight(:) train_seta.alco(:)]).^2);
+                d = sqrt(d(:,1)+d(:,2)+d(:,3));
+            <span class="keyword">case</span> 3 <span class="comment">% Distancia Mahalanobis</span>
+                d = (([test_seta.height(i), test_seta.weight(i), test_seta.alco(i)] - [train_seta.height(:) train_seta.weight(:) train_seta.alco(:)]).^2)./Sig2;            <span class="comment">%d = sqrt((d)*Sig1*transpose(d));</span>
+                d = sqrt(d(:,1)+d(:,2)+d(:,3));
+            <span class="keyword">otherwise</span> <span class="comment">% Por si acaso</span>
+                print(<span class="string">'Ok.'</span>)
+        <span class="keyword">end</span>
+
+        [dis, pos] = mink(d, k);
+        test_seta.gender(i) = mode(train_seta.gender(pos));
+
+    <span class="keyword">end</span>
+
+    <span class="comment">% Se grafica el resultado</span>
+    p1 = test_seta(test_seta.gender==1, :);
+    p2 = test_seta(test_seta.gender==2, :);
+
+    plot3(p1.height, p1.weight, p1.alco, <span class="string">'c^'</span>)
+    plot3(p2.height, p2.weight, p2.alco, <span class="string">'rs'</span>)
+
+    legend(<span class="string">'G&eacute;nero 1'</span>,<span class="string">'G&eacute;nero 2'</span>,<span class="string">'Prediction as gender 1'</span>,<span class="string">'Prediction as gender 2'</span>)
+    title(<span class="string">'Resultados kNN'</span>)
+    xlabel(<span class="string">'Altura'</span>)
+    ylabel(<span class="string">'Peso'</span>)
+    zlabel(<span class="string">'Alcohol'</span>)
+
+    <span class="comment">% Calcula la accuracy/Precisi&oacute;n</span>
+    acc = sum(ValRealesa==test_seta.gender)/length(test_seta.gender);
+    tiempoKNN = toc;
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">Elapsed time is 31.006962 seconds.
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+clear, clc
+
+tic % Inicia el conteo del tiempo
+
+%% Sección I: Desempeño de kNN para diferentes métricas de distancia.
+% El presente laboratorio lo iniciaremos implementando el algoritmo de 
+% k-Nearest Neigbors (kNN) para varios valores de k y para varios tipos 
+% de distancias en el espacio, recordando que este algoritmo consiste en 
+% la clasificación automática de varios puestos de muestra respecto a los 
+% puntos conocidos más cercanos. Luego de observado el comportamiento del 
+% algoritmo ante diferentes tipos de distancias se estará implementando 
+% una variación a dicho proceso, llamado condensed k-NN, utilizado para
+% reducir el set de datos para la clasificación.
+%%
+% Se nos solicita adaptar el algoritmo desarrollado en el laboratorio 1 
+% para que este calcule las distancias de varios métodos diferentes, 
+% los utilizados en el presente serán la distancia euclideana, Manhattan 
+% y Mahalanobis.
+
+%%
+% 
+% <<FormulasDistancias.png>>
+% 
+
+%%
+% Se puede observar una variación que se le ha aplicado al algoritmo 
+% visto en el laboratorio 1, donde podemos observar que se le solicita 
+% al usuario el tipo de distancia con la que va a trabajar
+
+%%
+% A continuación se presentan los tiempos de ejecución de cada tipo de
+% distancia para cada valor de k y sus respectivos valores de precisión.
+
+% Importa los datos
+train_set = readtable("Train set.xlsx");
+test_set = readtable("Test set.xlsx");
+
+g1 = train_set(train_set.gender==1, :);
+g2 = train_set(train_set.gender==2, :);
+
+% Grafica los datos
+plot3(g1.height, g1.weight, g1.alco, '.b')
+hold on 
+plot3(g2.height, g2.weight, g2.alco, '.y')
+
+% Se solicita la cantidad de vecinos a considerar.
+
+nTrainData = length(train_set.height); %size(train_set);
+ValReales = test_set.gender;
+
+[acc_K1_DistManhattan, tiempo_K1_DistManhattan] = KNN(1, 1, test_set, train_set, ValReales)
+[acc_K1_DistManhattan, tiempo_K3_DistManhattan] = KNN(3, 1, test_set, train_set, ValReales)
+[acc_K1_DistManhattan, tiempo_K5_DistManhattan] = KNN(5, 1, test_set, train_set, ValReales)
+[acc_K1_DistManhattan, tiempo_K9_DistManhattan] = KNN(9, 1, test_set, train_set, ValReales)
+[acc_K1_DistManhattan, tiempo_K15_DistManhattan] = KNN(15, 1, test_set, train_set, ValReales)
+
+[acc_K1_DistEuc, tiempo_K1_DistEuc] = KNN(1, 2, test_set, train_set, ValReales)
+[acc_K1_DistEuc, tiempo_K3_DistEuc] = KNN(3, 2, test_set, train_set, ValReales)
+[acc_K1_DistEuc, tiempo_K5_DistEuc] = KNN(5, 2, test_set, train_set, ValReales)
+[acc_K1_DistEuc, tiempo_K9_DistEuc] = KNN(9, 2, test_set, train_set, ValReales)
+[acc_K1_DistEuc, tiempo_K15_DistEuc] = KNN(15, 2, test_set, train_set, ValReales)
+
+[acc_K1_DistMahalanobis, tiempoK1DistMahalanobis] = KNN(1, 3, test_set, train_set, ValReales)
+[acc_K3_DistMahalanobis, tiempoK3DistMahalanobis] = KNN(3, 3, test_set, train_set, ValReales)
+[acc_K5_DistMahalanobis, tiempoK5DistMahalanobis] = KNN(5, 3, test_set, train_set, ValReales)
+[acc_K9_DistMahalanobis, tiempoK9DistMahalanobis] = KNN(9, 3, test_set, train_set, ValReales)
+[acc_K15_DistMahalanobis, tiempoK15DistMahalanobis] = KNN(15, 3, test_set, train_set, ValReales)
+
+%%
+% Se ha podido observar que los tipos de distancias no alteran tanto la
+% precisión del método de k vecinos más cercanos como lo hace el valor de
+% k, por lo que podemos intuir que utilizar varias métricas de distancias
+% no alteran del todo el proceso, además de que no podemos garantizar buena
+% eficiencia en cuanto al tiempo.
+
+toc % Termina conteo de tiempo
+
+function [acc, tiempoKNN]=KNN(k, DistType, test_seta, train_seta, ValRealesa)
+    tic;
+
+    % Se crea una matriz correspondiente a la inversa de los valores de
+    % varianza
+    sig = var([train_seta.height(:) train_seta.weight(:) train_seta.alco(:)]);
+    
+    Sig = [sig(1) 0 0; 0 sig(2) 0; 0 0 sig(3)];
+    Sig1 = inv(Sig);
+    Sig2 = [Sig1(1,1) Sig1(2,2) Sig1(3,3)];
+
+    % k = input('Introduzca la cantidad de vecinos: ');
+    % DistType = input('Seleccione el tipo de distancia \n (1) Manhattan, (2) Euclindeana, (3) Mahalanobis: ');
+    
+    for i = 1:length(test_seta.height)
+        i;
+        switch DistType % Calcula la distancia a cada punto dado
+            case 1 % Distancia Manhattan
+                d = abs([test_seta.height(i), test_seta.weight(i), test_seta.alco(i)] - [train_seta.height(:) train_seta.weight(:) train_seta.alco(:)]);
+                d = d(:,1)+d(:,2)+d(:,3);        
+            case 2 % Distancia Euclideana
+                %Rep = repmat([test_set.height(i), test_set.weight(i), test_set.alco(i)], nTrainData, 1);
+                d = (([test_seta.height(i), test_seta.weight(i), test_seta.alco(i)] - [train_seta.height(:) train_seta.weight(:) train_seta.alco(:)]).^2);
+                d = sqrt(d(:,1)+d(:,2)+d(:,3));
+            case 3 % Distancia Mahalanobis
+                d = (([test_seta.height(i), test_seta.weight(i), test_seta.alco(i)] - [train_seta.height(:) train_seta.weight(:) train_seta.alco(:)]).^2)./Sig2;            %d = sqrt((d)*Sig1*transpose(d));
+                d = sqrt(d(:,1)+d(:,2)+d(:,3));
+            otherwise % Por si acaso
+                print('Ok.')
+        end 
+    
+        [dis, pos] = mink(d, k);
+        test_seta.gender(i) = mode(train_seta.gender(pos));
+    
+    end
+    
+    % Se grafica el resultado
+    p1 = test_seta(test_seta.gender==1, :);
+    p2 = test_seta(test_seta.gender==2, :);
+    
+    plot3(p1.height, p1.weight, p1.alco, 'c^')
+    plot3(p2.height, p2.weight, p2.alco, 'rs')
+    
+    legend('Género 1','Género 2','Prediction as gender 1','Prediction as gender 2')
+    title('Resultados kNN')
+    xlabel('Altura')
+    ylabel('Peso')
+    zlabel('Alcohol')
+    
+    % Calcula la accuracy/Precisión
+    acc = sum(ValRealesa==test_seta.gender)/length(test_seta.gender);
+    tiempoKNN = toc;
+end 
+##### SOURCE END #####
+--></body></html>
